@@ -11,11 +11,9 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +66,6 @@ public class RetrieveTicketsID {
    
    // used to parse the attirbutes "created" and "resolutiondate"
    public static String parseDate(String datetime){
-	   Map<String,String> date_time = new HashMap<>();
 	   String date = "";
 	   int i = 0;
 	   
@@ -144,8 +141,8 @@ public class RetrieveTicketsID {
    
    public static void main(String[] args) throws IOException, JSONException {
 		   
-	   String projName = "CACTUS", resdate = "", crdate = "";
-	   Integer j = 0, i = 0, total = 1, x_ax = 0;
+	   String projName = "CACTUS";
+	   Integer j = 0, i = 0, total = 1;
 	   
 	   List<Ticket> tick_list = new ArrayList<>();
 	   //Get JSON API for closed bugs w/ AV in the project
@@ -165,8 +162,6 @@ public class RetrieveTicketsID {
 			   //Iterate through each ticket
 			   try {
 				   JSONObject fields = new JSONObject(issues.getJSONObject(i%1000).get("fields").toString());
-				   Map<String,String> dt = new HashMap<>();
-				   resdate = RetrieveTicketsID.parseDate(fields.getString("resolutiondate"));
 				   Ticket tick = new Ticket(issues.getJSONObject(i%1000).get("key").toString(), 
 						   RetrieveTicketsID.parseDate(fields.getString("resolutiondate")),
 						   RetrieveTicketsID.parseDate(fields.getString("created")));
@@ -177,10 +172,9 @@ public class RetrieveTicketsID {
 			   } 
 		   }
 	   } while (i < total);
-	   
+	   System.out.println(tick_list.size());
 	   Map<String, Integer> tick_map = RetrieveTicketsID.groupByMonth(tick_list);
 	   RetrieveTicketsID.fillDataset(tick_map);
-	   return;
    }
    
 }
