@@ -1,4 +1,4 @@
-package logic;
+package logic.delivone;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -97,7 +97,6 @@ public class RetrieveTicketsID {
 			   jp.jsonToTicket(tickList, issues, i);
 		   }
 	   } while (i < total);
-	   //System.out.println(tickList.size());
 	   Map<String, Integer> tickMap = groupByMonth(tickList);
 	   List<String> yearsMonths = getYears(tickList);
 	   ex.fillDataset(tickMap, yearsMonths);
