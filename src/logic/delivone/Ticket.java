@@ -1,7 +1,6 @@
 package logic.delivone;
 
 import java.time.LocalDate;
-import java.time.Month;
 
 // this class aims to keep the important information for the ticket
 public class Ticket {
@@ -27,12 +26,12 @@ public class Ticket {
 		return this.creationDate;
 	}
 	
-	public Month getResMonth() {
-		return LocalDate.parse(this.resolutionDate).getMonth();
+	public Integer getResMonth() {
+		return LocalDate.parse(this.resolutionDate).getMonthValue();
 	}
 	
-	public Month getCrMonth() {
-		return LocalDate.parse(this.creationDate).getMonth();
+	public Integer getCrMonth() {
+		return LocalDate.parse(this.creationDate).getMonthValue();
 	}
 	
 	public Integer getResYear() {

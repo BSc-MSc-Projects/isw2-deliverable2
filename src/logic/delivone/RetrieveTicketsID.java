@@ -59,7 +59,7 @@ public class RetrieveTicketsID {
 	   LocalDate dt;
 	   for(int i = 0; i < years.size(); i++) {
 		   dt = years.get(i);
-		   String monthYear = dt.getMonth().toString() + "-" + dt.getYear();
+		   String monthYear = dt.getMonthValue() + "-" + dt.getYear();
 		   if(!keys.contains(monthYear)) {
 			   keys.add(monthYear);
 		   }
@@ -99,7 +99,8 @@ public class RetrieveTicketsID {
 	   } while (i < total);
 	   Map<String, Integer> tickMap = groupByMonth(tickList);
 	   List<String> yearsMonths = getYears(tickList);
-	   ex.fillDataset(tickMap, yearsMonths);
+	   //ex.fillDataset(tickMap, yearsMonths);
+	   ex.makeCsv(tickMap, yearsMonths, projName);
    }
    
 }

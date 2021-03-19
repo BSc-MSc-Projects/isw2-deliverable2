@@ -1,9 +1,13 @@
 package logic.delivone;
 
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -50,6 +54,35 @@ public class ExcelManipulator {
 		} catch (FileNotFoundException e) {
 			Logger.getLogger("DEV1").log(Level.FINE, "Cannot find file\n");
 		} catch (IOException e) {
+			Logger.getLogger("DEV1").log(Level.FINE, "Problems opening file\n");
+		}
+	}
+	
+	
+	// formats the data in input in a csv file
+	public void makeCsv(Map<String, Integer> tickMap, List<String> yearsMonths, String projName) {
+		File file = new File("dati" + projName+ ".csv");
+		Float mean = getMean(tickMap);
+		Float variance = getVariance(tickMap, mean);
+			   
+		Double upperBound = mean + 3*Math.sqrt(variance);
+		Double lowerBound = mean - 3*Math.sqrt(variance);
+		
+		// this formats the double form x.xx to x,xx
+		DecimalFormat df = new DecimalFormat("#.0000000");
+	    DecimalFormatSymbols sym = DecimalFormatSymbols.getInstance();
+	    sym.setDecimalSeparator(',');
+	    df.setDecimalFormatSymbols(sym);
+		
+		try(FileOutputStream fos = new FileOutputStream(file);  
+				DataOutputStream dos = new DataOutputStream(fos)){
+			for(int i = 0; i < tickMap.size(); i++) {
+				String key = yearsMonths.get(i);
+					dos.writeBytes(key+";"+tickMap.get(key)+";"+"upper bound"+";"+df.format(upperBound)
+							+";"+"lower bound"+";"+df.format(lowerBound)+";"+"mean value"+df.format(mean));
+					dos.write('\n'); // creates a new column in the file
+			} 
+		}catch (IOException e) {
 			Logger.getLogger("DEV1").log(Level.FINE, "Problems opening file\n");
 		}
 	}
