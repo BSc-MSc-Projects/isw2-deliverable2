@@ -18,6 +18,11 @@ public class Ticket {
 		return this.id;
 	}
 	
+	//this method is created to test Travis CI automated build
+	public Integer getIntId() {
+		return Integer.getInteger(this.id);
+	}
+	
 	public String getResDate() {
 		return this.resolutionDate;
 	}
