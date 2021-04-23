@@ -1,17 +1,26 @@
-package logic.delivone;
+package logic.labone;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-// this class aims to keep the important information for the ticket
+import logic.labtwo.Version;
+
+// this class keeps the important information for the Jira ticket
 public class Ticket {
 	private String id;
 	private String resolutionDate;
 	private String creationDate;
+	private List<Version> avList; //list of the affected version/s in the ticket
+	private List<Version> fvList; //list of the fix version/s
 	
 	public Ticket(String id, String resDate, String creatDate) {
 		this.id = id;
 		this.resolutionDate = resDate;
 		this.creationDate = creatDate;
+		
+		this.avList = new ArrayList<>();
+		this.fvList = new ArrayList<>();
 	}
 	
 	public String getId() {
@@ -25,6 +34,10 @@ public class Ticket {
 	
 	public String getResDate() {
 		return this.resolutionDate;
+	}
+	
+	public LocalDate getResDateAsDate() {
+		return LocalDate.parse(this.resolutionDate);
 	}
 	
 	public String getCrDate() {
@@ -45,5 +58,22 @@ public class Ticket {
 	
 	public Integer getCrYear() {
 		return LocalDate.parse(this.creationDate).getYear();
+	}
+	
+	public void addAv(Version av) {
+		this.avList.add(av);
+	}
+	
+	public List<Version> getAvs(){
+		return this.avList;
+	}
+	
+	// adds one fixed version to the list
+	public void addFv(Version fv) {
+		this.fvList.add(fv);
+	}
+	
+	public List<Version> getFvs(){
+		return this.fvList;
 	}
 }

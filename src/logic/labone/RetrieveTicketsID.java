@@ -1,4 +1,4 @@
-package logic.delivone;
+package logic.labone;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -101,6 +101,7 @@ public class RetrieveTicketsID {
 	   List<String> yearsMonths = getYears(tickList);
 	   //ex.fillDataset(tickMap, yearsMonths);
 	   ex.makeCsv(tickMap, yearsMonths, projName);
+	   System.out.println("Completato \n");
    }
    
 }

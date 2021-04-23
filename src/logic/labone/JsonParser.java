@@ -1,4 +1,4 @@
-package logic.delivone;
+package logic.labone;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,16 +15,46 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import logic.labtwo.Version;
+
 // this class manages and parses JSON objects/arrays
 public class JsonParser {
 	
 	public void jsonToTicket(List<Ticket> tickList, JSONArray issues, Integer i) {
 		try {
+			int size;
+			int index;
+			JSONObject jo;
+			
 			JSONObject fields = new JSONObject(issues.getJSONObject(i%1000).get("fields").toString());
 			Ticket tick = new Ticket(issues.getJSONObject(i%1000).get("key").toString(), 
 					RetrieveTicketsID.parseDate(fields.getString("resolutiondate")),
 					RetrieveTicketsID.parseDate(fields.getString("created")));
 			   		tickList.add(tick);
+			
+		    JSONArray versions = new JSONArray(fields.getJSONArray("versions"));
+			
+		    // Parse the info for the Affected Versions
+			size = versions.toList().size();
+			for(index = 0; index < size; index++) {
+				jo = versions.getJSONObject(index);
+				Version ver = new Version(jo.getString("name"), jo.getString("releaseDate"), 
+						jo.getString("id"), "");
+				tick.addAv(ver);
+			}
+			
+			//Parse the info for the Fix Versions
+			JSONArray fixedVersions = new JSONArray(fields.getJSONArray("fixVersions"));
+			size = fixedVersions.toList().size();
+			for(index = 0; index < size; index++) {
+				jo = fixedVersions.getJSONObject(index);
+				if (jo.getBoolean("released")) {
+					Version vers = new Version(jo.getString("name"), jo.getString("releaseDate"),
+							jo.getString("id"), "");
+					tick.addFv(vers);
+				}
+			}
+			
 		}catch (JSONException err){
 			   Logger.getLogger("DEV1").log(Level.FINE, err.toString());
 		}

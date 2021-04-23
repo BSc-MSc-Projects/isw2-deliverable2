@@ -1,4 +1,4 @@
-package logic.delivone;
+package logic.labone;
 
 import java.io.DataOutputStream;
 import java.io.File;

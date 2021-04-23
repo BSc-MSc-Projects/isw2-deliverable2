@@ -1,3 +1,4 @@
+<!-- to run: pass as goal exec:java -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>isw2-deliverable1</groupId>
@@ -41,6 +42,17 @@
 	    <groupId>org.apache.poi</groupId>
     	<artifactId>poi</artifactId>
     	<version>3.9</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.eclipse.jgit</groupId>
+	    <artifactId>org.eclipse.jgit</artifactId>
+	    <version>3.5.0.201409260305-r</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable -->
+	<dependency>
+    	<groupId>nz.ac.waikato.cms.weka</groupId>
+    	<artifactId>weka-stable</artifactId>
+    	<version>3.8.5</version>
 	</dependency>
   </dependencies>
   
