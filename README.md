@@ -13,5 +13,4 @@ where buggyness means if that class had a bug in release x.y.z. To check wheater
 	- Affected Versions from Jira ticket, to which a specific git commit refers
 	- Proportion method, computed using an incremental method
 
-
-
+[![Build Status](https://travis-ci.com/piercirocaliandro/ISW2-PROJECT2.svg?branch=main)](https://travis-ci.com/piercirocaliandro/ISW2-PROJECT2)
