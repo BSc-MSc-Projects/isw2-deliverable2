@@ -91,10 +91,10 @@ public class CsvProducer {
 	 * @param relDate: the release date of the version*/
 	private void fillCsvWithMetrics(String release, LocalDate relDate) {
 		String cons =  this.project + " metrics.csv";
-		File f = new File(cons);
+		var f = new File(cons);
 		
-		try (FileWriter fw = new FileWriter(f.getAbsoluteFile(), true);
-				BufferedWriter bw = new BufferedWriter(fw)){
+		try (var fw = new FileWriter(f.getAbsoluteFile(), true);
+				var bw = new BufferedWriter(fw)){
 			
 			for(String key : this.mapKeys) {
 				if(this.nRev.get(key) > 0) {
@@ -135,10 +135,10 @@ public class CsvProducer {
 	/* Write the header in the .csv file*/
 	public void setCsvHeader() {
 		String cons =  this.project+" metrics.csv";
-		File f = new File(cons);
+		var f = new File(cons);
 		
-		try (FileWriter fw = new FileWriter(f.getAbsoluteFile(), true);
-				BufferedWriter bw = new BufferedWriter(fw)){
+		try (var fw = new FileWriter(f.getAbsoluteFile(), true);
+				var bw = new BufferedWriter(fw)){
 				
 				sb.append("Project name"+","+"Release"+ ","+"Date" + "," + "Class name"
 				+ "," + "Size" + "," + "NR" + "," + "NAuth" + "," + "Age"
@@ -166,12 +166,12 @@ public class CsvProducer {
 			throws IOException {
 		
 		sb.append("Calculating metrics for release " + release);
-		String temp = sb.toString();
+		var temp = sb.toString();
 		Logger.getLogger("CSV_PROD").info(temp);
 		sb.delete(0, sb.length());
 		
 		List<RevCommit> commitList;
-		LogAnalyzer logAnal = new LogAnalyzer(this.project.toLowerCase());
+		var logAnalyzer = new LogAnalyzer(this.project.toLowerCase());
 		List<Integer> tempMetrics;
 		String currClass;
 		
@@ -180,11 +180,11 @@ public class CsvProducer {
 			commitList = javaClass.getCommitList();
 			currClass = javaClass.getName();
 			if(!this.mapKeys.contains(currClass)) {
-					tempMetrics = logAnal.countLocForRelease(commitList, javaClass.getClassName(), startDate,
+					tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(), startDate,
 							endDate, true); // have to count the first commit
 			}
 			else
-				tempMetrics = logAnal.countLocForRelease(commitList, javaClass.getClassName(), startDate,
+				tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(), startDate,
 						endDate, false);
 			if(tempMetrics.get(3) > 0) { // at least one commit was processed
 				incrMetrics(tempMetrics, currClass);

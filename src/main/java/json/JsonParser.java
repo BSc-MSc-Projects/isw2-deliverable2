@@ -33,13 +33,13 @@ public class JsonParser {
 			int index;
 			JSONObject jo;
 			
-			JSONObject fields = new JSONObject(issues.getJSONObject(i%1000).get("fields").toString());
-			Ticket tick = new Ticket(issues.getJSONObject(i%1000).get("key").toString(), 
+			var fields = new JSONObject(issues.getJSONObject(i%1000).get("fields").toString());
+			var tick = new Ticket(issues.getJSONObject(i%1000).get("key").toString(), 
 					this.parseDate(fields.getString("resolutiondate")),
 					this.parseDate(fields.getString("created")));
 			   		tickList.add(tick);
 			
-		    JSONArray versions = new JSONArray(fields.getJSONArray("versions"));
+		    var versions = new JSONArray(fields.getJSONArray("versions"));
 			
 		    // Parse the info for the Affected Versions
 			size = versions.toList().size();
@@ -51,12 +51,12 @@ public class JsonParser {
 			}
 			
 			//Parse the info for the Fix Versions
-			JSONArray fixedVersions = new JSONArray(fields.getJSONArray("fixVersions"));
+			var fixedVersions = new JSONArray(fields.getJSONArray("fixVersions"));
 			size = fixedVersions.toList().size();
 			for(index = 0; index < size; index++) {
 				jo = fixedVersions.getJSONObject(index);
 				if (jo.getBoolean("released")) {
-					Version vers = new Version(jo.getString("name"), jo.getString("releaseDate"),
+					var vers = new Version(jo.getString("name"), jo.getString("releaseDate"),
 							jo.getInt("id"), -1);
 					tick.addFv(vers);
 				}
@@ -73,7 +73,7 @@ public class JsonParser {
 	 * @param url: the URL from which the JSONArray is read */
 	public JSONArray readJsonArrayFromUrl(String url) throws IOException, JSONException {
 		InputStream is = new URL(url).openStream();
-		try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
+		try (var rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
 			String jsonText = readAll(rd);
 			return new JSONArray(jsonText);
 		} finally {
@@ -86,7 +86,7 @@ public class JsonParser {
 	 * 
 	 * @param rd: the Reader object */
 	private String readAll(Reader rd) throws IOException {
-	      StringBuilder sb = new StringBuilder();
+	      var sb = new StringBuilder();
 	      int cp;
 	      while ((cp = rd.read()) != -1) {
 	         sb.append((char) cp);
@@ -100,7 +100,7 @@ public class JsonParser {
 	 * @param url: the URL from which to read*/
 	public JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
 		InputStream is = new URL(url).openStream();
-		try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
+		try (var rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))){
 			String jsonText = readAll(rd);
 			return new JSONObject(jsonText);
 		} finally {
@@ -113,8 +113,8 @@ public class JsonParser {
 	 * 
 	 * @param datetime: a String in DateTime format */ 
 	private String parseDate(String datetime){
-		int i = 0;
-		StringBuilder sb = new StringBuilder();
+		var i = 0;
+		var sb = new StringBuilder();
 		   
 		while(datetime.charAt(i) != 'T') {
 			sb.append(datetime.charAt(i));

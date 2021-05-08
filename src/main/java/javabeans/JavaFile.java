@@ -38,8 +38,8 @@ public class JavaFile {
 	
 	// return only the class name, and not the absolute path
 	public String getClassName() {
-		StringBuilder sb = new StringBuilder();
-		int index = 0;
+		var sb = new StringBuilder();
+		var index = 0;
 		for(index = this.name.length()-1; this.name.charAt(index) != '/'; index--) {
 			sb.append(this.name.charAt(index));
 		}

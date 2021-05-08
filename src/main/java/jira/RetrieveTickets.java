@@ -19,7 +19,7 @@ public class RetrieveTickets {
 		Integer j = 0; 
 		Integer i = 0; 
 		Integer total = 1;
-		JsonParser jp = new JsonParser();
+		var jp = new JsonParser();
 		   
 		List<Ticket> tickList = new ArrayList<>();
 		//Get JSON API for closed bugs w/ AV in the project
@@ -32,7 +32,7 @@ public class RetrieveTickets {
 	                + i.toString() + "&maxResults=" + j.toString();
 			JSONObject json;
 			json = jp.readJsonFromUrl(url);
-			JSONArray issues = json.getJSONArray("issues");
+			var issues = json.getJSONArray("issues");
 			total = json.getInt("total");
 				
 			//Iterate through each ticket
@@ -41,7 +41,7 @@ public class RetrieveTickets {
 			}
 		} while (i < total);
 		
-		Ticket[] tickArray = new Ticket[tickList.size()];
+		var tickArray = new Ticket[tickList.size()];
 		tickArray = tickList.toArray(tickArray);
 		
 		mergeSort(tickArray, 0, tickArray.length-1);
@@ -63,7 +63,7 @@ public class RetrieveTickets {
 		var i = left;
 	    var j = center + 1;
 	    var k = 0;
-	    Ticket[] b = new Ticket[right-left+1];
+	    var b = new Ticket[right-left+1];
 
 	    while (i <= center && j <= right) {
 	       if(a[i].getResDateAsDate().isBefore(a[j].getResDateAsDate()) ||

@@ -27,7 +27,7 @@ public class ClassLister {
 	}
 	
 	public List<String> getJavaFiles(){
-		File dir = new File("/home" + "/pierciro" + "/Scrivania/" + this.project);
+		var dir = new File("/home" + "/pierciro" + "/Scrivania/" + this.project);
 		List<String> jFiles = new ArrayList<>();
 		listJFiles(dir.listFiles(), jFiles);
 		return jFiles;

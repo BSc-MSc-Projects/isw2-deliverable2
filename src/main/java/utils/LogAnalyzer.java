@@ -45,7 +45,7 @@ public class LogAnalyzer {
 		List<RevCommit> rcList = new ArrayList<>();
 		List<RevCommit> invList = new ArrayList<>();
 		
-		try (Git git = Git.open(new File(this.url + this.project))){
+		try (var git = Git.open(new File(this.url + this.project))){
 			LogCommand cmd = git.log();
 			Iterable<RevCommit> commits = cmd.call();
 			commits.forEach(rcList::add);
@@ -80,7 +80,12 @@ public class LogAnalyzer {
 			LocalDate upperLim, boolean isFirst) 
 			throws IOException {
 		List<Integer> tempLines;
-		Integer[] finalMetrics = {0,0,0,0};
+		var finalMetrics = new Integer[4];
+		finalMetrics[0] = 0;
+		finalMetrics[1] = 0;
+		finalMetrics[2] = 0;
+		finalMetrics[3] = 0;
+		
 		LocalDate commDate;
 		RevCommit old = commits.get(0);
 		commDate = this.getCommitDate(old.getAuthorIdent());
@@ -98,7 +103,7 @@ public class LogAnalyzer {
 		RevCommit nw;
 		List<RevCommit> commitList = new ArrayList<>();
 		
-		for(int i = 1; i < commits.size(); i++) {
+		for(var i = 1; i < commits.size(); i++) {
 			nw = commits.get(i);
 			commDate = getCommitDate(nw.getAuthorIdent());
 			
@@ -139,10 +144,13 @@ public class LogAnalyzer {
 	 * @file: the .java file */
 	public List<Integer> gitDiff(RevCommit rev1, RevCommit rev2, String file) throws IOException {
 		List<DiffEntry> diffList;
-		Integer[] edits = {0,0,0};
+		var edits = new Integer[3];
+		edits[0] = 0;
+		edits[1] = 0;
+		edits[2] = 0;
 		
-		try(Git git = Git.open(new File(this.url + this.project));
-				DiffFormatter formatter = new DiffFormatter(null)){
+		try(var git = Git.open(new File(this.url + this.project));
+				var formatter = new DiffFormatter(null)){
 			formatter.setRepository(git.getRepository());
 		
 			if(rev2 != null) {
@@ -150,15 +158,15 @@ public class LogAnalyzer {
 			}
 			else {
 				AbstractTreeIterator oldTreeIter = new EmptyTreeIterator();
-				ObjectReader reader = git.getRepository().newObjectReader();
+				var reader = git.getRepository().newObjectReader();
 				AbstractTreeIterator newTreeIter = new CanonicalTreeParser(null, reader, rev1.getTree());
 				diffList = formatter.scan(oldTreeIter, newTreeIter);
 			}
 			for(DiffEntry diff: diffList){
 				if(diff.toString().contains(file)) {
 					formatter.setDetectRenames(true);
-					FileHeader fh = formatter.toFileHeader(diff);
-					EditList el = fh.toEditList();
+					var fh = formatter.toFileHeader(diff);
+					var el = fh.toEditList();
 					for(Edit e : el) {
 						this.processEdit(e, edits);
 					}
@@ -202,8 +210,8 @@ public class LogAnalyzer {
 	 * @param commit: git commit  */
 	public List<ScmFile> filesInCommit(RevCommit commit){
 		List<ScmFile> commitFiles = new ArrayList<>();
-		try (Git git = Git.open(new File(this.url + this.project));){
-			Repository repo = git.getRepository();
+		try (var git = Git.open(new File(this.url + this.project));){
+			var repo = git.getRepository();
 			return JGitUtils.getFilesInCommit(repo, commit);
 		} catch (IOException e) {
 			Logger.getLogger("LA").log(Level.SEVERE, "Failed to open .git repository\n");

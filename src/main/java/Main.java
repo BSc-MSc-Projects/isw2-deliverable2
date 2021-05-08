@@ -73,7 +73,7 @@ public class Main {
 		for(String javaFile : this.javaFiles) {
 			counter++;
 			this.getProgress(counter, size);
-			JavaFile jFile = new JavaFile(javaFile);
+			var jFile = new JavaFile(javaFile);
 			jFileList.add(jFile);
 		}
 		
@@ -87,7 +87,6 @@ public class Main {
 		
 		this.logger.log(Level.INFO, "-------------------------Completed------------------------------\n");
 		
-		//vers = mn.discardPercRelease(vers); // discard half of the release
 		keys.addAll(vers.keySet()); // consider all the release
 		
 		// defines the interval for a release
@@ -107,7 +106,7 @@ public class Main {
 		
 		var limit = (int)(keys.size()*this.precRelease);
 		
-		for(int i = 1; i < limit; i++) {
+		for(var i = 1; i < limit; i++) {
 			counter++;
 			this.getProgress(counter, limit);
 			upper = vers.get(keys.get(i));
@@ -115,11 +114,7 @@ public class Main {
 			customMsg.append(lower+" "+upper+"\n");
 			msg = customMsg.toString();
 			customMsg.delete(0, customMsg.length());
-			
 			this.logger.log(Level.INFO, msg);
-			
-			this.tickList = discardOldTicket(upper, tickList);
-			this.csvProd.setTickList(tickList);
 			
 			this.csvProd.getAllMetrics(lower, upper, keys.get(i));
 			lower = upper;
@@ -138,25 +133,10 @@ public class Main {
 	private void getProgress(int counter, int total) {
 		var perc = ((float)counter/(float)total);
 		this.customMsg.append("Working... ["+perc*100+"%]");
-		String msg = this.customMsg.toString();
+		var msg = this.customMsg.toString();
 		customMsg.delete(0, customMsg.length());
 		
 		this.logger.log(Level.INFO, msg);
-	}
-	
-	
-	/* Discard the ticket that are under a threshold 
-	 * 
-	 * @param cap: the date threshold*/
-	private static List<Ticket> discardOldTicket(LocalDate cap, List<Ticket> tickList){
-		List<Ticket> relTick = new ArrayList<>();
-		LocalDate tempD;
-		for(Ticket t: tickList) {
-			tempD = t.getResDateAsDate();
-			if(tempD.isAfter(cap))
-				relTick.add(t);
-		}
-		return relTick;
 	}
 	
 	
@@ -191,7 +171,7 @@ public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
-		Main mn = new Main();
+		var mn = new Main();
 		mn.startAnalysis();
 	}
 }

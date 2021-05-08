@@ -29,7 +29,7 @@ public class RetrieveVersions {
 				   + projName;
 		try {
 			JSONObject jobj = jp.readJsonFromUrl(url);
-			JSONArray versions = jobj.getJSONArray("versions");
+			var versions = jobj.getJSONArray("versions");
 			fillVersionInfo(versions, versHm);
 			return versHm;
 			
@@ -45,7 +45,7 @@ public class RetrieveVersions {
 	private void fillVersionInfo(JSONArray array, Map<String, LocalDate> versions){
 		var total = array.toList().size();
 		var i = 0;
-		String releaseDate = "releaseDate";
+		var releaseDate = "releaseDate";
 		List<LocalDate> dates = new ArrayList<>();
 		List<String> versName = new ArrayList<>();
 		List<LocalDate> versDate = new ArrayList<>();
