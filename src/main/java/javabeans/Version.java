@@ -1,4 +1,4 @@
-package logic.labtwo;
+package main.java.javabeans;
 
 import java.time.LocalDate;
 
@@ -6,14 +6,18 @@ import java.time.LocalDate;
 public class Version {
 	private String name;
 	private String releaseDate;
-	private String id;
-	private String projId;
+	private Integer id;
+	private Integer projId;
 	
-	public Version(String name, String releaseDate, String id, String projId) {
+	public Version(String name, String releaseDate, Integer id, Integer projId) {
 		this.name = name;
 		this.releaseDate = releaseDate;
 		this.id = id;
 		this.projId = projId;
+	}
+	
+	public Version() {
+		
 	}
 	
 	public String getName() {
@@ -25,10 +29,10 @@ public class Version {
 	}
 	
 	public Integer getId() {
-		return Integer.getInteger(this.id);
+		return this.id;
 	}
 	
 	public Integer getProjId() {
-		return Integer.getInteger(this.projId);
+		return this.projId;
 	}
 }

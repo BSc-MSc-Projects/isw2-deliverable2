@@ -1,21 +1,25 @@
-package logic.labone;
+package main.java.javabeans;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import logic.labtwo.Version;
-
 // this class keeps the important information for the Jira ticket
 public class Ticket {
-	private String id;
+	private String key;
 	private String resolutionDate;
 	private String creationDate;
 	private List<Version> avList; //list of the affected version/s in the ticket
 	private List<Version> fvList; //list of the fix version/s
 	
-	public Ticket(String id, String resDate, String creatDate) {
-		this.id = id;
+	
+	// default constructor
+	public Ticket() {
+		
+	}
+	
+	public Ticket(String key, String resDate, String creatDate) {
+		this.key = key;
 		this.resolutionDate = resDate;
 		this.creationDate = creatDate;
 		
@@ -23,13 +27,8 @@ public class Ticket {
 		this.fvList = new ArrayList<>();
 	}
 	
-	public String getId() {
-		return this.id;
-	}
-	
-	//this method is created to test Travis CI automated build
-	public Integer getIntId() {
-		return Integer.getInteger(this.id);
+	public String getKey() {
+		return this.key;
 	}
 	
 	public String getResDate() {
@@ -38,6 +37,10 @@ public class Ticket {
 	
 	public LocalDate getResDateAsDate() {
 		return LocalDate.parse(this.resolutionDate);
+	}
+	
+	public LocalDate getCrDateAsDate() {
+		return LocalDate.parse(this.creationDate);
 	}
 	
 	public String getCrDate() {

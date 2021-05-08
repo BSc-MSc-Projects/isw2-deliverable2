@@ -29,6 +29,23 @@
     		<mainClass>logic.delivone.RetrieveTicketsID</mainClass>
   		</configuration>
 	 </plugin>
+	 <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-scm-plugin</artifactId>
+            <version>1.11.2</version>
+			<configuration>
+				<providerImplementations>
+					<git>jgit</git>
+				</providerImplementations>
+			</configuration>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.maven.scm</groupId>
+					<artifactId>maven-scm-provider-jgit</artifactId>
+                    <version>1.11.2</version>
+				</dependency>
+			</dependencies>
+		</plugin>
     </plugins>
   </build>
   
@@ -43,16 +60,29 @@
     	<artifactId>poi</artifactId>
     	<version>3.9</version>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit -->
 	<dependency>
-	    <groupId>org.eclipse.jgit</groupId>
-	    <artifactId>org.eclipse.jgit</artifactId>
-	    <version>3.5.0.201409260305-r</version>
+	  <groupId>org.eclipse.jgit</groupId>
+	  <artifactId>org.eclipse.jgit</artifactId>
+      <version>5.11.0.202103091610-r</version>
 	</dependency>
+
 	<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/weka-stable -->
 	<dependency>
     	<groupId>nz.ac.waikato.cms.weka</groupId>
     	<artifactId>weka-stable</artifactId>
     	<version>3.8.5</version>
+	</dependency>
+	    <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-provider-jgit</artifactId>
+      <version>1.11.2</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/SMOTE -->
+	<dependency>
+     <groupId>nz.ac.waikato.cms.weka</groupId>
+     <artifactId>SMOTE</artifactId>
+     <version>1.0.2</version>
 	</dependency>
   </dependencies>
   
