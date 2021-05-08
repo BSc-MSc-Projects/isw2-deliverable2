@@ -45,7 +45,7 @@ public class JsonParser {
 			size = versions.toList().size();
 			for(index = 0; index < size; index++) {
 				jo = versions.getJSONObject(index);
-				Version ver = new Version(jo.getString("name"), jo.getString("releaseDate"), 
+				var ver = new Version(jo.getString("name"), jo.getString("releaseDate"), 
 						jo.getInt("id"), -1);
 				tick.addAv(ver);
 			}
