@@ -14,4 +14,4 @@ where buggyness means if that class had a bug in release x.y.z. To check wheater
 	- Proportion method, computed using an incremental method
 
 
-
+https://travis-ci.com/piercirocaliandro/ISW2-PROJECT2.svg?branch=main
