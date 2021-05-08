@@ -82,22 +82,23 @@ public class LogAnalyzer {
 		finalMetrics[2] = 0;
 		finalMetrics[3] = 0;
 		
+		var processed = 0;
+		
 		LocalDate commDate;
 		RevCommit old = commits.get(0);
 		commDate = this.getCommitDate(old.getAuthorIdent());
 		
-		//verify if the class was not present in the release
 		if(commDate.isAfter(upperLim)) {
-			return Arrays.asList(finalMetrics); // this return type means that the class was not preset
+			return Arrays.asList(finalMetrics);
 		}
 			
 		if(isFirst) {
 			tempLines = gitDiff(old, null, fName);
 			finalMetrics[0] = tempLines.get(0);
+			processed++;
 		}
 		
 		RevCommit nw;
-		List<RevCommit> commitList = new ArrayList<>();
 		
 		for(var i = 1; i < commits.size(); i++) {
 			nw = commits.get(i);
@@ -109,7 +110,7 @@ public class LogAnalyzer {
 					finalMetrics[0] += tempLines.get(0);
 					finalMetrics[1] += tempLines.get(1);
 					finalMetrics[2] = tempLines.get(2);
-					commitList.add(old);
+					processed++;
 				}
 			}
 			else {
@@ -119,13 +120,13 @@ public class LogAnalyzer {
 					finalMetrics[0] += tempLines.get(0);
 					finalMetrics[1] += tempLines.get(1);
 					finalMetrics[2] = tempLines.get(2);
-					commitList.add(old);
+					processed++;
 				}
 			}
 			old = nw;
 		}
 		
-		finalMetrics[3] = commitList.size();
+		finalMetrics[3] = processed;
 		return Arrays.asList(finalMetrics);
 	}
 	
@@ -208,7 +209,13 @@ public class LogAnalyzer {
 		List<ScmFile> commitFiles = new ArrayList<>();
 		try (var git = Git.open(new File(this.url + this.project));){
 			var repo = git.getRepository();
-			return JGitUtils.getFilesInCommit(repo, commit);
+			List<ScmFile> javaFiles = new ArrayList<>();
+			var allFiles = JGitUtils.getFilesInCommit(repo, commit);
+			for(ScmFile file: allFiles) {
+				if(file.getPath().endsWith(".java"))
+					javaFiles.add(file);
+			}
+			return javaFiles;
 		} catch (IOException e) {
 			Logger.getLogger("LA").log(Level.SEVERE, "Failed to open .git repository\n");
 		}

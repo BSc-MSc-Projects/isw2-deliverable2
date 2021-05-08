@@ -59,13 +59,14 @@ public class Main {
 		this.logger.log(Level.INFO, "Starting...\n");
 		
 		this.tickList = this.rt.retrieveTick(this.projName); // get the all the ticket of type "bug" from Jira
-		var total = this.tickList.size();
 		
 		Map<String, LocalDate> vers = this.rv.getVersions(this.projName);
 		List<String> keys = new ArrayList<>();
 		this.javaFiles = this.cl.getJavaFiles();
 		List<JavaFile> jFileList = new ArrayList<>();
 		List<RevCommit> entireLog = this.la.findAll();
+		
+		List<String> csvKeys = new ArrayList<>();
 		
 		var counter = 0;
 		var size = this.javaFiles.size();
@@ -75,6 +76,7 @@ public class Main {
 			this.getProgress(counter, size);
 			var jFile = new JavaFile(javaFile);
 			jFileList.add(jFile);
+			csvKeys.add(jFile.getClassName());
 		}
 		
 		this.logger.log(Level.INFO, "-------------------------Completed------------------------------\n");
@@ -84,6 +86,8 @@ public class Main {
 
 		// set the parameters for the CsvProducer
 		this.csvProd.setJavaFileList(jFileList);
+		this.csvProd.setKeys(csvKeys);
+		this.csvProd.initSize();
 		
 		this.logger.log(Level.INFO, "-------------------------Completed------------------------------\n");
 		
@@ -119,13 +123,7 @@ public class Main {
 			this.csvProd.getAllMetrics(lower, upper, keys.get(i));
 			lower = upper;
 		}
-		
-		customMsg.append("Over " + total + " tickets, the analysis found "+ 
-		this.csvProd.getNBuggy() + " bug istances\n");
-		msg = customMsg.toString();
-		customMsg.delete(0, customMsg.length());
-		
-		this.logger.log(Level.INFO, msg);
+
 		this.logger.log(Level.INFO, "-------------------------Ended------------------------------\n");
 	}
 	
@@ -155,7 +153,7 @@ public class Main {
 			filesInComm = this.la.filesInCommit(commit);
 			for(ScmFile commFile: filesInComm) {
 				for(JavaFile jFile : jFileList) {
-					if(commFile.getPath().contains(jFile.getClassName())) {
+					if(commFile.getPath().endsWith(jFile.getClassName())) {
 						jFile.insertNewCommit(commit);
 						
 						// check if the creation date has been set

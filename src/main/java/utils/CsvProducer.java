@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import main.java.javabeans.JavaFile;
@@ -46,6 +48,8 @@ public class CsvProducer {
 	private String project;
 	private StringBuilder sb;
 	
+	private String constName = " metrics.csv";
+	
 	public CsvProducer(String projectName) {
 		this.jiraTicketList = new ArrayList<>();
 		this.projFiles = new ArrayList<>();
@@ -63,6 +67,7 @@ public class CsvProducer {
 		this.buggynessMap = new LinkedHashMap<>();
 		
 		this.project = projectName;
+		this.deleteIfExists();
 		
 		this.sb = new StringBuilder();
 	}
@@ -84,20 +89,30 @@ public class CsvProducer {
 		return this.nBuggy;
 	}
 	
+	public void setKeys(List<String> keys){
+		this.mapKeys= keys;
+	}
+	
+	public void initSize() {
+		for(String key : this.mapKeys) {
+			this.sizeList.put(key, 0);
+		}
+	}
+	
 	
 	/* Insert the data for a specific version in the .csv file
 	 * 
 	 * @param release: the version id
 	 * @param relDate: the release date of the version*/
 	private void fillCsvWithMetrics(String release, LocalDate relDate) {
-		String cons =  this.project + " metrics.csv";
+		String cons =  this.project + constName;
 		var f = new File(cons);
 		
 		try (var fw = new FileWriter(f.getAbsoluteFile(), true);
 				var bw = new BufferedWriter(fw)){
 			
 			for(String key : this.mapKeys) {
-				if(this.nRev.get(key) > 0) {
+				if(this.sizeList.get(key) > 0 && this.nRev.get(key) > 0) {
 					sb.append(this.project + "," + release +"," +relDate+","+ 
 							key + "," + this.sizeList.get(key) +
 							"," + this.nRev.get(key) + "," +this.nAuthList.get(key)+","+
@@ -108,8 +123,11 @@ public class CsvProducer {
 							this.churnList.get(key)+
 							"," + this.churnList.get(key)/this.nRev.get(key)+
 							"," + this.buggynessMap.get(key));
+					bw.newLine();
+					bw.write(sb.toString());
+					sb.delete(0, sb.toString().length());
 				}
-				else {
+				else if(this.sizeList.get(key) > 0) {
 					sb.append(this.project+ "," + release +"," +relDate+","+ 
 							key + "," + this.sizeList.get(key) +
 							"," + 0 + "," +0+","+
@@ -119,10 +137,10 @@ public class CsvProducer {
 							0 + "," + 
 							0+
 							"," + 0 + "," + this.buggynessMap.get(key));
+					bw.newLine();
+					bw.write(sb.toString());
+					sb.delete(0, sb.toString().length());
 				}
-				bw.newLine();
-				bw.write(sb.toString());
-				sb.delete(0, sb.toString().length());
 			}
 		}catch (FileNotFoundException e) {
 				Logger.getLogger("LAB").log(Level.WARNING, "Cannot find the file\n");
@@ -134,7 +152,7 @@ public class CsvProducer {
 	
 	/* Write the header in the .csv file*/
 	public void setCsvHeader() {
-		String cons =  this.project+" metrics.csv";
+		String cons =  this.project+constName;
 		var f = new File(cons);
 		
 		try (var fw = new FileWriter(f.getAbsoluteFile(), true);
@@ -144,7 +162,7 @@ public class CsvProducer {
 				+ "," + "Size" + "," + "NR" + "," + "NAuth" + "," + "Age"
 				+","+"MAX_LOC_ADDED"+","+"LOC_ADDED"+","+"AVG_LOC_ADDDED"	+","+
 				"Churn"+","+"AVG_CHURN"
-				+ "," +"buggyness" + "\n");
+				+ "," +"buggyness");
 				bw.write(sb.toString());
 				sb.delete(0, sb.toString().length());
 				
@@ -156,7 +174,7 @@ public class CsvProducer {
 	}
 	
 	
-	/* Compute all the metrics for each calss and for the specific version
+	/* Compute all the metrics for each class and for the specific version
 	 * and report them in a .csv file 
 	 * 
 	 * @param startDate: the release date of the previous version
@@ -178,13 +196,14 @@ public class CsvProducer {
 		// iterate over all the .java files
 		for(JavaFile javaClass : projFiles) {
 			commitList = javaClass.getCommitList();
-			currClass = javaClass.getName();
-			if(!this.mapKeys.contains(currClass)) {
-					tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(), startDate,
+			currClass = javaClass.getClassName();
+			if(this.sizeList.get(currClass) <= 0) {
+					tempMetrics = logAnalyzer.countLocForRelease(commitList, currClass, startDate,
 							endDate, true); // have to count the first commit
 			}
 			else
-				tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(), startDate,
+				tempMetrics = logAnalyzer.countLocForRelease(commitList, currClass, 
+						startDate,
 						endDate, false);
 			if(tempMetrics.get(3) > 0) { // at least one commit was processed
 				incrMetrics(tempMetrics, currClass);
@@ -205,23 +224,21 @@ public class CsvProducer {
 	 * @param metrics: the lines of code (added - removed) to sum to the size
 	 * @param className: name of the .java class under analysis */
 	private void incrMetrics(List<Integer> metrics, String className) {
-		if(!this.mapKeys.contains(className)) {
-			this.sizeList.put(className, metrics.get(0)-metrics.get(1));
+		if(this.sizeList.get(className) <= 0) {
 			this.churnList.put(className, metrics.get(0)-metrics.get(1));
 			this.locAddedList.put(className, metrics.get(0));
 			this.maxLocAddList.put(className, metrics.get(2));
 			this.nRev.put(className, metrics.get(3));
-			this.mapKeys.add(className);
 		}
 		else {
-			this.sizeList.replace(className, this.sizeList.get(className)+ 
-					metrics.get(0)-metrics.get(1));
 			this.churnList.replace(className, metrics.get(0)-metrics.get(1));
 			this.locAddedList.replace(className, metrics.get(0));
 			this.maxLocAddList.replace(className, metrics.get(0)+metrics.get(1)+
 					metrics.get(2));
 			this.nRev.replace(className, metrics.get(3));
 		}
+		this.sizeList.replace(className, this.sizeList.get(className)+ 
+				metrics.get(0)-metrics.get(1));
 	}
 	
 	
@@ -238,23 +255,24 @@ public class CsvProducer {
 		LocalDate commDate;
 		
 		for(RevCommit commit : commitList) {
-		commDate = commit.getAuthorIdent().getWhen().toInstant()
+		PersonIdent curr = commit.getAuthorIdent();
+		commDate = curr.getWhen().toInstant()
 				.atZone(ZoneId.systemDefault())
 				.toLocalDate();
 		
 		if(startDate == null) {
 			if(commDate.isBefore(endDate) &&
-					!authors.contains(commit.getAuthorIdent().getName()))
+					!authors.contains(curr.getName()))
 				nAuth += 1;
-			authors.add(commit.getAuthorIdent().getName());
+			authors.add(curr.getName());
 		}
 		else {
 			if((commDate.isAfter(startDate) || commDate.isEqual(startDate))
 				&& commDate.isBefore(endDate) &&
-				!authors.contains(commit.getAuthorIdent().getName())) {
+				!authors.contains(curr.getName())) {
 				
 					nAuth += 1;
-					authors.add(commit.getAuthorIdent().getName());
+					authors.add(curr.getName());
 				}
 			}
 		}
@@ -270,15 +288,15 @@ public class CsvProducer {
 			LocalDate relDate) {
 		
 		// the class has not been created yet
-		if(!this.mapKeys.contains(projFile.getName()))
+		if(this.sizeList.get(projFile.getClassName()) <= 0)
 				return;
 		
 		var weeks = ChronoUnit.WEEKS.between(projFile.getCreationDate(), relDate);
 		if(!this.ageList.containsKey(projFile.getName())) {
-			this.ageList.put(projFile.getName(), weeks);
+			this.ageList.put(projFile.getClassName(), weeks);
 		}
 		else {
-			this.ageList.replace(projFile.getName(), weeks);
+			this.ageList.replace(projFile.getClassName(), weeks);
 		}
 	}
 	
@@ -313,15 +331,14 @@ public class CsvProducer {
 					
 					// we found that the class was buggy
 					if(buggy) {
-						setBuggyInList(jFile.getName(), buggy);
+						setBuggyInList(jFile.getClassName(), buggy);
 						written = true;
-						this.nBuggy++;
 						break;
 					}
 				}
 			}
 			if(!written)
-				setBuggyInList(jFile.getName(), buggy);
+				setBuggyInList(jFile.getClassName(), buggy);
 			written = false;
 		}
 	}
@@ -337,8 +354,7 @@ public class CsvProducer {
 		for(Ticket tick : this.jiraTicketList) {
 
 			// the commit refers to a ticket
-			if(rc.getFullMessage().contains(tick.getKey()) &&
-					(rc.getFullMessage().indexOf(tick.getKey()) != -1)) {
+			if((rc.getFullMessage().indexOf(tick.getKey()) != -1)) {
 				return computeBuggyness(tick, rc, version);
 			}
 		}
@@ -358,6 +374,7 @@ public class CsvProducer {
 							.atZone(ZoneId.systemDefault())
 							.toLocalDate(), tick.getCrDateAsDate(),
 							tick.getAvs(), tick.getFvs());
+					this.nBuggy++;
 					return true;
 				}
 			}
@@ -371,7 +388,7 @@ public class CsvProducer {
 	 * @param: javaFileName: the name of the .java class
 	 * @param: isBuggy: the state of the class*/
 	private void setBuggyInList(String javaFileName, boolean isBuggy) {
-		if(!this.mapKeys.contains(javaFileName))
+		if(this.sizeList.get(javaFileName) <= 0)
 			return;
 		var bug = "no";
 		if(isBuggy) {
@@ -490,6 +507,17 @@ public class CsvProducer {
 		 * and checking if the ticket is consistent */
 		if(fvIndex != ovIndex && fvIndex > ovIndex && ovIndex > ivIndex) {
 			this.proportion += (fvIndex - ivIndex)/(float)(fvIndex - ovIndex);
+		}
+	}
+	
+	
+	private void deleteIfExists() {
+		var file = new File(this.project + constName);
+		try {
+			Files.deleteIfExists(file.toPath());
+		} catch (IOException e) {
+			Logger.getLogger("CSV_PROD").log(Level.SEVERE, "deleteIfExists(): error while deleting"
+					+ "file");
 		}
 	}
 }
