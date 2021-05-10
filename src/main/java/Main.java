@@ -123,7 +123,7 @@ public class Main {
 			this.csvProd.getAllMetrics(lower, upper, keys.get(i));
 			lower = upper;
 		}
-
+		
 		this.logger.log(Level.INFO, "-------------------------Ended------------------------------\n");
 	}
 	

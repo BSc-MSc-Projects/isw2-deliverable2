@@ -43,6 +43,8 @@ public class CsvProducer {
 	// parameters useful to apply proportion
 	private float proportion = 0.0f;
 	private int nBuggy = 0;
+	private int nProp = 0;
+	private int noAvs = 0;
 	private Map<String, LocalDate> versions;
 	
 	private String project;
@@ -89,6 +91,14 @@ public class CsvProducer {
 		return this.nBuggy;
 	}
 	
+	public Integer getNoAv() {
+		return this.noAvs;
+	}
+	
+	public Integer getNProp() {
+		return this.nProp;
+	}
+	
 	public void setKeys(List<String> keys){
 		this.mapKeys= keys;
 	}
@@ -126,6 +136,8 @@ public class CsvProducer {
 					bw.newLine();
 					bw.write(sb.toString());
 					sb.delete(0, sb.toString().length());
+					if(this.buggynessMap.get(key).equals("yes"))
+						this.nBuggy++;
 				}
 				else if(this.sizeList.get(key) > 0) {
 					sb.append(this.project+ "," + release +"," +relDate+","+ 
@@ -140,6 +152,8 @@ public class CsvProducer {
 					bw.newLine();
 					bw.write(sb.toString());
 					sb.delete(0, sb.toString().length());
+					if(this.buggynessMap.get(key).equals("yes"))
+						this.nBuggy++;
 				}
 			}
 		}catch (FileNotFoundException e) {
@@ -213,7 +227,7 @@ public class CsvProducer {
 			setClassAge(javaClass, endDate); // the age has to be incremented anyway
 		}
 		
-		setBuggynessWithAv(release, endDate);
+		setBuggynessWithAv(release);
 		fillCsvWithMetrics(release, endDate);
 		resetVersMetrics();
 	}
@@ -319,22 +333,18 @@ public class CsvProducer {
 	 * @param version: the current version
 	 * @param versionDate: release date of the version
 	 * @param prevDate: date of the previous release */
-	private void setBuggynessWithAv(String version, LocalDate versionDate) {
+	private void setBuggynessWithAv(String version) {
 		var buggy = false;
 		var written = false;
 		for(JavaFile jFile : this.projFiles) {
 			for(RevCommit rc : jFile.getCommitList()) {
-				if(rc.getAuthorIdent().getWhen().toInstant()
-				.atZone(ZoneId.systemDefault())
-				.toLocalDate().isAfter(versionDate)) {
-					buggy = checkIfBuggy(rc, version);
+				buggy = checkIfBuggy(rc, version);
 					
-					// we found that the class was buggy
-					if(buggy) {
-						setBuggyInList(jFile.getClassName(), buggy);
-						written = true;
-						break;
-					}
+				// we found that the class was buggy
+				if(buggy) {
+					setBuggyInList(jFile.getClassName(), buggy);
+					written = true;
+					break;
 				}
 			}
 			if(!written)
@@ -362,11 +372,18 @@ public class CsvProducer {
 	}
 	
 	
+	/* Check if AV are available for the given ticket, if so use them to 
+	 * determine weather the class was buggy or not. Otherwise, apply proportion
+	 * 
+	 * @param tick: Jira ticket
+	 * @param rc: git commit
+	 * @param version: the release currently under analysis */
 	private boolean computeBuggyness(Ticket tick, RevCommit rc, String version) {
-		if(tick.getAvs().isEmpty())
+		if(tick.getAvs().isEmpty() || tick.getFvs().isEmpty()) {
 			return applyProportion(version, rc.getAuthorIdent().getWhen().toInstant()
 					.atZone(ZoneId.systemDefault())
-					.toLocalDate(), tick.getCrDateAsDate());
+					.toLocalDate(), tick);
+		}
 		else {
 			for(Version v : tick.getAvs()) {
 				if(v.getName().contentEquals(version)) {
@@ -374,7 +391,6 @@ public class CsvProducer {
 							.atZone(ZoneId.systemDefault())
 							.toLocalDate(), tick.getCrDateAsDate(),
 							tick.getAvs(), tick.getFvs());
-					this.nBuggy++;
 					return true;
 				}
 			}
@@ -412,14 +428,14 @@ public class CsvProducer {
 	 * @param release: current release under analysis
 	 * @param fixCommDate: date of the fix commit
 	 * @param tickOpenDate: opening date of the ticket */
-	private boolean applyProportion(String release, LocalDate fixCommDate, 
-			LocalDate tickOpenDate) {
+	private boolean applyProportion(String release, LocalDate fixCommDate, Ticket tick) {
 		String ov = null;
 		String fv = null;
 		String predIv;
 		
 		List<String> versionsId = new ArrayList<>();
 		versionsId.addAll(this.versions.keySet());
+		var tickOpenDate = tick.getCrDateAsDate();
 		
 		//find the opening version
 		for(String ver : versionsId) {
@@ -429,17 +445,18 @@ public class CsvProducer {
 			}
 		}
 		
-		//find the fv
-		for(String ver : versionsId) {
-			if(fixCommDate.isBefore(this.versions.get(ver))) {
-				fv = ver;
-				break;
-			}
+		var fvList = tick.getFvs();
+		if(!fvList.isEmpty()) {
+			fv = findFv(fvList, fixCommDate);
+		}
+		else {
+			findFvByAllVers(versionsId, fixCommDate);
 		}
 		
 		var ovInd = versionsId.indexOf(ov);
 		var fvInd = versionsId.indexOf(fv);
-		var predIvInd =  (int)Math.floor((fvInd - (fvInd - ovInd)*(this.proportion/this.nBuggy)));
+		var predIvInd =  (int)Math.floor((fvInd - (fvInd - ovInd)*(this.proportion/this.nBuggy
+				+this.nProp)));
 		
 		// the ticket is not consistent
 		if(predIvInd > ovInd || ovInd > fvInd) {
@@ -455,8 +472,46 @@ public class CsvProducer {
 		LocalDate ivDate = versions.get(predIv);
 		LocalDate ovDate = versions.get(ov);
 		
-		return ((currRel.isAfter(ivDate) || currRel.isEqual(ivDate)) && 
-				currRel.isBefore(ovDate));
+		if(((currRel.isAfter(ivDate) || currRel.isEqual(ivDate)) && 
+				currRel.isBefore(ovDate))) {
+			this.nProp++;
+			return true;
+		}
+		return false;
+	}
+	
+	
+	
+	/* Find the Fix Version for a commit, needed to apply proportion
+	 * 
+	 * @param fvList: list of fixed versions for the ticket
+	 * @param fixCommDate: date of the fix commit corresponding to the ticket 
+	 * 
+	 * N.B: this method was added to reduce the cognitive complexity of applyProportion()*/
+	private String findFv(List<Version> fvList, LocalDate fixCommDate) {
+		for(Version fixV : fvList) {
+			if(fixCommDate.isBefore(this.versions.get(fixV.getName()))) {
+				return fixV.getName();
+			}
+		}
+		return null;
+	}
+	
+	
+	/* Find the Fix Version for a commit using the list of all the
+	 * releases, needed to apply proportion
+	 * 
+	 * @param versionsId: list of all the releases' id
+	 * @param fixCommDate: date of the fix commit corresponding to the ticket 
+	 * 
+	 * N.B: this method was added to reduce the cognitive complexity of applyProportion()*/
+	private String findFvByAllVers(List<String> versionsId, LocalDate fixCommDate) {
+		for(String ver : versionsId) {
+			if(fixCommDate.isBefore(this.versions.get(ver))) {
+				return ver;
+			}
+		}
+		return null;
 	}
 	
 	
@@ -485,13 +540,7 @@ public class CsvProducer {
 				ivIndex = vers.indexOf(iv);
 		}
 		
-		//set the OV
-		for(String key : vers) {
-			if(tickCr.isBefore(this.versions.get(key))) {
-				ovIndex = vers.indexOf(key);
-				break;
-			}
-		}
+		ovIndex = getOpeningVers(vers, avList, tickCr);
 		
 		//set the FV
 		for(Version fVers : fixVersionList) {
@@ -508,6 +557,39 @@ public class CsvProducer {
 		if(fvIndex != ovIndex && fvIndex > ovIndex && ovIndex > ivIndex) {
 			this.proportion += (fvIndex - ivIndex)/(float)(fvIndex - ovIndex);
 		}
+	}
+	
+	
+	/* Get the opening version for a bug, using Jira information: if the Affected Versions are
+	 * reported, use the latest as the OV, otherwise use the ticket creation's date
+	 * 
+	 * @param vers: list of all the releases
+	 * @param avList: list of Affected Versions
+	 * @param tickCr: creation date of the ticket 
+	 * 
+	 * N:B: method added to reduce the cognitive complexity of incrementProportion() */
+	private int getOpeningVers(List<String> vers, List<Version> avList, LocalDate tickCr) {
+		var ovIndex = 0;
+		String ov;
+		
+		if(avList.size() > 1) {
+			ovIndex = -1;
+			for(Version v : avList) {
+				ov = v.getName();
+				if(ovIndex == -1 || vers.indexOf(ov) > ovIndex)
+					ovIndex = vers.indexOf(ov);
+			}
+		}
+		else {
+			//set the OV
+			for(String key : vers) {
+				if(tickCr.isBefore(this.versions.get(key))) {
+					ovIndex = vers.indexOf(key);
+					break;
+				}
+			}
+		}
+		return ovIndex;
 	}
 	
 	

@@ -21,7 +21,6 @@ import main.java.javabeans.Version;
 // this class manages and parses JSON objects/arrays
 public class JsonParser {
 	
-	
 	/* Parse the JSONArray containing all the Jira ticket for a given project
 	 * 
 	 * @param tickList: the List in which the parsed ticket will be stored
@@ -52,8 +51,8 @@ public class JsonParser {
 			
 			//Parse the info for the Fix Versions
 			var fixedVersions = new JSONArray(fields.getJSONArray("fixVersions"));
-			size = fixedVersions.toList().size();
-			for(index = 0; index < size; index++) {
+			var size1 = fixedVersions.toList().size();
+			for(index = 0; index < size1; index++) {
 				jo = fixedVersions.getJSONObject(index);
 				if (jo.getBoolean("released")) {
 					var vers = new Version(jo.getString("name"), jo.getString("releaseDate"),
@@ -61,7 +60,6 @@ public class JsonParser {
 					tick.addFv(vers);
 				}
 			}
-			
 		}catch (JSONException err){
 			   Logger.getLogger("DEV1").log(Level.FINE, err.toString());
 		}
