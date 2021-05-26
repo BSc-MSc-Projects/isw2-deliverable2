@@ -71,7 +71,8 @@ public class LogAnalyzer {
 	 * @param fName: the .java file name
 	 * @param lowerLim: the lower bound for the time interval
 	 * @param upperLim: the upper bound for the time interval
-	 * @param isFirst: get the creation commit for that class*/
+	 * @param isFirst: get the creation commit for that class
+	 * */
 	public List<Integer> countLocForRelease(List<RevCommit> commits, String fName, LocalDate lowerLim, 
 			LocalDate upperLim, boolean isFirst) 
 			throws IOException {
@@ -83,6 +84,9 @@ public class LogAnalyzer {
 		finalMetrics[3] = 0;
 		
 		var processed = 0;
+		if(commits.isEmpty()) {
+			return Arrays.asList(finalMetrics);
+		}
 		
 		LocalDate commDate;
 		RevCommit old = commits.get(0);
@@ -95,6 +99,7 @@ public class LogAnalyzer {
 		if(isFirst) {
 			tempLines = gitDiff(old, null, fName);
 			finalMetrics[0] = tempLines.get(0);
+			finalMetrics[2] = tempLines.get(2);
 			processed++;
 		}
 		
@@ -109,7 +114,10 @@ public class LogAnalyzer {
 					tempLines = gitDiff(old, nw, fName);
 					finalMetrics[0] += tempLines.get(0);
 					finalMetrics[1] += tempLines.get(1);
-					finalMetrics[2] = tempLines.get(2);
+					
+					// check if the MAX_LOC_ADDED changed
+					if(finalMetrics[2] == 0 || finalMetrics[2] < tempLines.get(2))
+						finalMetrics[2] = tempLines.get(2);
 					processed++;
 				}
 			}
@@ -119,7 +127,8 @@ public class LogAnalyzer {
 					tempLines = gitDiff(old, nw, fName);
 					finalMetrics[0] += tempLines.get(0);
 					finalMetrics[1] += tempLines.get(1);
-					finalMetrics[2] = tempLines.get(2);
+					if(finalMetrics[2] == 0 || finalMetrics[2] < tempLines.get(2))
+						finalMetrics[2] = tempLines.get(2);
 					processed++;
 				}
 			}
@@ -212,7 +221,7 @@ public class LogAnalyzer {
 			List<ScmFile> javaFiles = new ArrayList<>();
 			var allFiles = JGitUtils.getFilesInCommit(repo, commit);
 			for(ScmFile file: allFiles) {
-				if(file.getPath().endsWith(".java"))
+				//if(file.getPath().endsWith(".java"))
 					javaFiles.add(file);
 			}
 			return javaFiles;

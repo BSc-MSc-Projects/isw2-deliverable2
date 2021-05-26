@@ -22,7 +22,7 @@ import main.java.utils.LogAnalyzer;
 
 // main class used to gather info
 public class Main {
-	private String projName = "ZOOKEEPER"; //name of the project to analyze
+	private String projName = "BOOKKEEPER"; //name of the project to analyze
 	private float precRelease = 0.5f; // percentage of release to discard
 	
 	private List<String> javaFiles; //all the classes of the project
@@ -76,7 +76,7 @@ public class Main {
 			this.getProgress(counter, size);
 			var jFile = new JavaFile(javaFile);
 			jFileList.add(jFile);
-			csvKeys.add(jFile.getClassName());
+			csvKeys.add(jFile.getName());
 		}
 		
 		this.logger.log(Level.INFO, "-------------------------Completed------------------------------\n");

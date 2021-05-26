@@ -139,7 +139,7 @@ public class CsvProducer {
 					if(this.buggynessMap.get(key).equals("yes"))
 						this.nBuggy++;
 				}
-				else if(this.sizeList.get(key) > 0) {
+				else if(this.sizeList.get(key) > 0 && this.nRev.get(key) == 0) {
 					sb.append(this.project+ "," + release +"," +relDate+","+ 
 							key + "," + this.sizeList.get(key) +
 							"," + 0 + "," +0+","+
@@ -210,13 +210,13 @@ public class CsvProducer {
 		// iterate over all the .java files
 		for(JavaFile javaClass : projFiles) {
 			commitList = javaClass.getCommitList();
-			currClass = javaClass.getClassName();
+			currClass = javaClass.getName();
 			if(this.sizeList.get(currClass) <= 0) {
-					tempMetrics = logAnalyzer.countLocForRelease(commitList, currClass, startDate,
-							endDate, true); // have to count the first commit
+					tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(),
+							startDate, endDate, true); // have to count the first commit
 			}
 			else
-				tempMetrics = logAnalyzer.countLocForRelease(commitList, currClass, 
+				tempMetrics = logAnalyzer.countLocForRelease(commitList, javaClass.getClassName(), 
 						startDate,
 						endDate, false);
 			if(tempMetrics.get(3) > 0) { // at least one commit was processed
@@ -247,8 +247,7 @@ public class CsvProducer {
 		else {
 			this.churnList.replace(className, metrics.get(0)-metrics.get(1));
 			this.locAddedList.replace(className, metrics.get(0));
-			this.maxLocAddList.replace(className, metrics.get(0)+metrics.get(1)+
-					metrics.get(2));
+			this.maxLocAddList.replace(className, metrics.get(2));
 			this.nRev.replace(className, metrics.get(3));
 		}
 		this.sizeList.replace(className, this.sizeList.get(className)+ 
@@ -302,15 +301,15 @@ public class CsvProducer {
 			LocalDate relDate) {
 		
 		// the class has not been created yet
-		if(this.sizeList.get(projFile.getClassName()) <= 0)
+		if(this.sizeList.get(projFile.getName()) <= 0)
 				return;
 		
 		var weeks = ChronoUnit.WEEKS.between(projFile.getCreationDate(), relDate);
 		if(!this.ageList.containsKey(projFile.getName())) {
-			this.ageList.put(projFile.getClassName(), weeks);
+			this.ageList.put(projFile.getName(), weeks);
 		}
 		else {
-			this.ageList.replace(projFile.getClassName(), weeks);
+			this.ageList.replace(projFile.getName(), weeks);
 		}
 	}
 	
@@ -342,13 +341,13 @@ public class CsvProducer {
 					
 				// we found that the class was buggy
 				if(buggy) {
-					setBuggyInList(jFile.getClassName(), buggy);
+					setBuggyInList(jFile.getName(), buggy);
 					written = true;
 					break;
 				}
 			}
 			if(!written)
-				setBuggyInList(jFile.getClassName(), buggy);
+				setBuggyInList(jFile.getName(), buggy);
 			written = false;
 		}
 	}
