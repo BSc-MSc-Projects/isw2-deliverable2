@@ -1,10 +1,13 @@
 package main.java.utils;
 
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -123,7 +126,7 @@ public class CsvProducer {
 			
 			for(String key : this.mapKeys) {
 				if(this.sizeList.get(key) > 0 && this.nRev.get(key) > 0) {
-					sb.append(this.project + "," + release +"," +relDate+","+ 
+					sb.append(this.project + "," + release +"," + 
 							key + "," + this.sizeList.get(key) +
 							"," + this.nRev.get(key) + "," +this.nAuthList.get(key)+","+
 							this.ageList.get(key) + ","+
@@ -140,7 +143,7 @@ public class CsvProducer {
 						this.nBuggy++;
 				}
 				else if(this.sizeList.get(key) > 0 && this.nRev.get(key) == 0) {
-					sb.append(this.project+ "," + release +"," +relDate+","+ 
+					sb.append(this.project+ "," + release +"," + 
 							key + "," + this.sizeList.get(key) +
 							"," + 0 + "," +0+","+
 							this.ageList.get(key) + ","+
@@ -172,7 +175,7 @@ public class CsvProducer {
 		try (var fw = new FileWriter(f.getAbsoluteFile(), true);
 				var bw = new BufferedWriter(fw)){
 				
-				sb.append("Project name"+","+"Release"+ ","+"Date" + "," + "Class name"
+				sb.append("Project name"+","+"Release"+ "," + "Class name"
 				+ "," + "Size" + "," + "NR" + "," + "NAuth" + "," + "Age"
 				+","+"MAX_LOC_ADDED"+","+"LOC_ADDED"+","+"AVG_LOC_ADDDED"	+","+
 				"Churn"+","+"AVG_CHURN"
@@ -337,7 +340,10 @@ public class CsvProducer {
 		var written = false;
 		for(JavaFile jFile : this.projFiles) {
 			for(RevCommit rc : jFile.getCommitList()) {
-				buggy = checkIfBuggy(rc, version);
+				var ld = (rc.getAuthorIdent().getWhen().toInstant()
+						.atZone(ZoneId.systemDefault())).toLocalDate();
+				if(ld.isAfter(this.versions.get(version)))
+					buggy = checkIfBuggy(rc, version);
 					
 				// we found that the class was buggy
 				if(buggy) {
@@ -378,12 +384,14 @@ public class CsvProducer {
 	 * @param rc: git commit
 	 * @param version: the release currently under analysis */
 	private boolean computeBuggyness(Ticket tick, RevCommit rc, String version) {
-		if(tick.getAvs().isEmpty() || tick.getFvs().isEmpty()) {
+		if(tick.getAvs().isEmpty() || tick.getFvs().isEmpty() || (tick.getAvs().isEmpty()
+				&& !tick.getFvs().isEmpty()) || (tick.getAvs().isEmpty() && 
+						tick.getFvs().isEmpty())) {
 			return applyProportion(version, rc.getAuthorIdent().getWhen().toInstant()
 					.atZone(ZoneId.systemDefault())
 					.toLocalDate(), tick);
 		}
-		else {
+		else if(!tick.getAvs().isEmpty()){
 			for(Version v : tick.getAvs()) {
 				if(v.getName().contentEquals(version)) {
 					incrementProportion(rc.getAuthorIdent().getWhen().toInstant()
@@ -541,11 +549,18 @@ public class CsvProducer {
 		
 		ovIndex = getOpeningVers(vers, avList, tickCr);
 		
-		//set the FV
-		for(Version fVers : fixVersionList) {
-			if(fVers.getReleaseDate().isAfter(fixCommitDate)) {
-				fv = fVers.getName();
-				break;
+		if(fixVersionList.isEmpty()){
+			List<String> allVers = new ArrayList<>();
+			allVers.addAll(this.versions.keySet());
+			fv = this.findFvByAllVers(allVers, fixCommitDate);
+		}
+		else {
+			//set the FV
+			for(Version fVers : fixVersionList) {
+				if(fVers.getReleaseDate().isAfter(fixCommitDate)) {
+					fv = fVers.getName();
+					break;
+				}
 			}
 		}
 		

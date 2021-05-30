@@ -51,7 +51,7 @@ public class RetrieveVersions {
 		List<LocalDate> versDate = new ArrayList<>();
 		
 		while(i < total){
-			if(array.getJSONObject(i).getBoolean("released") && 
+			if(/*array.getJSONObject(i).getBoolean("released") && */
 					array.getJSONObject(i).keySet().contains(releaseDate)) {
 					versName.add(array.getJSONObject(i).getString("name"));
 					versDate.add(LocalDate.parse(array.getJSONObject(i).getString(releaseDate)));
@@ -80,5 +80,20 @@ public class RetrieveVersions {
 			}
 			i = 0;
 		}
+	}
+	
+	
+	/* Retrieve the version for a given project, returning only the name of the first 
+	 * 100*versionPerc% 
+	 * 
+	 * @param projName: name of the project
+	 * @param versionPerc: percentage of version to consider
+	 * */
+	public List<String> getVersionNames(String projName, float versionPerc) {
+		Map<String, LocalDate> vers = this.getVersions(projName);
+		List<String> keys = new ArrayList<>();
+		keys.addAll(vers.keySet());
+		var limit = (int)(keys.size()*versionPerc);
+		return keys.subList(0, limit);
 	}
 }

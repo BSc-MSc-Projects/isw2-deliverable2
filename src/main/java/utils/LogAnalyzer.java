@@ -221,7 +221,7 @@ public class LogAnalyzer {
 			List<ScmFile> javaFiles = new ArrayList<>();
 			var allFiles = JGitUtils.getFilesInCommit(repo, commit);
 			for(ScmFile file: allFiles) {
-				//if(file.getPath().endsWith(".java"))
+				if(file.getPath().endsWith(".java") && !javaFiles.contains(file))
 					javaFiles.add(file);
 			}
 			return javaFiles;
