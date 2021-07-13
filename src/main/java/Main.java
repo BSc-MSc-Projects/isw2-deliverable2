@@ -109,7 +109,6 @@ public class Main {
 		this.csvProd.getAllMetrics(null, lower, keys.get(0));
 		
 		var limit = (int)(keys.size()*this.precRelease);
-		//var limit = keys.size();
 		
 		/*truncate on the last-1 release, because last one 
 		 * because last one will result in all "no" for the buggyness */

@@ -36,7 +36,7 @@ public class WalkForwardClassify {
 	
 	private int trainIndex = 1;
 	private String[] sampleList = {"NONE", "OVER", "UNDER", "SMOTE"};
-	private String[] costSensEnum = {"NONE", "THRESH", /*"SENS"*/};
+	private String[] costSensEnum = {"NONE", "THRESH", "SENS"};
 	
 	private int nTrain = 0;
 	
@@ -76,7 +76,6 @@ public class WalkForwardClassify {
 		}
 		
 		//run for each RunProfile
-		System.out.println("Starting:\n");
 		this.dm.writeHeader(false);
 		for(RunProfile prof : profiles) {
 			this.dm.setProfile(prof);
@@ -95,12 +94,10 @@ public class WalkForwardClassify {
 	public void computeMetrics(RunProfile profile) throws Exception {
 		
 		// compute the first train and test set
-		System.out.println("First iteration \n");
 		this.nTrain++;
 		this.runClassifiers(false, this.fileLines.get(0), 0, profile);
 		
 		for(var i = 1; i < this.versList.size()-2; i++) {
-			System.out.println("Iteration "+this.nTrain);
 			this.nTrain++;
 			this.runClassifiers(true, null, i, profile);
 		}
@@ -141,10 +138,10 @@ public class WalkForwardClassify {
 		
 		// check for cost sensitive classification
 		if(profile.getSensitive().equals("THRESH")) {
-			this.classifyWithCostSensitive(instList);
+			this.classifyWithCostSensitive(instList, true);
 		}
 		else if(profile.getSensitive().equals("SENS")) {
-			//TODO: cerca di capire come cazzo si implementa sta cosa della threshold
+			this.classifyWithCostSensitive(instList, false);
 		}
 		else {
 			this.classify(instList);
@@ -157,7 +154,7 @@ public class WalkForwardClassify {
 	 * @param instList: list containing training set (first element) 
 	 * and testing set (second element)
 	 * */
-	public void classifyWithCostSensitive(List<Instances> instList) {
+	public void classifyWithCostSensitive(List<Instances> instList, boolean sensThres) {
 		// initialize classifiers
 		var naiveBayes = new NaiveBayes();
 		var ibk = new IBk();
@@ -175,6 +172,12 @@ public class WalkForwardClassify {
 		ibkCs.setCostMatrix(cm);
 		rfCs.setClassifier(randomForest);
 		rfCs.setCostMatrix(cm);
+		
+		//based on sens learning or sens thresh
+		nbCs.setMinimizeExpectedCost(sensThres);
+		ibkCs.setMinimizeExpectedCost(sensThres);
+		rfCs.setMinimizeExpectedCost(sensThres);
+		
 		
 		//build the classifiers
 		try {
@@ -250,8 +253,8 @@ public class WalkForwardClassify {
 	
 	public static void main(String[] args) throws Exception {
 		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-		var pName = "BOOKKEEPER";
-		var dir = "bookkeeper-files/";
+		var pName = "ZOOKEEPER";
+		var dir = "zookeeper-files/";
 		var mwc = new WalkForwardClassify(pName, dir);
 		mwc.completeRun();
 	}

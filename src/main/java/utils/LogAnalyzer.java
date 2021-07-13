@@ -76,7 +76,7 @@ public class LogAnalyzer {
 	public List<Integer> countLocForRelease(List<RevCommit> commits, String fName, LocalDate lowerLim, 
 			LocalDate upperLim, boolean isFirst) 
 			throws IOException {
-		List<Integer> tempLines;
+		List<Integer> tempLines = null;
 		var finalMetrics = new Integer[4];
 		finalMetrics[0] = 0;
 		finalMetrics[1] = 0;
@@ -112,12 +112,7 @@ public class LogAnalyzer {
 			if(lowerLim == null) {
 				if(commDate.isBefore(upperLim)) {
 					tempLines = gitDiff(old, nw, fName);
-					finalMetrics[0] += tempLines.get(0);
-					finalMetrics[1] += tempLines.get(1);
-					
-					// check if the MAX_LOC_ADDED changed
-					if(finalMetrics[2] == 0 || finalMetrics[2] < tempLines.get(2))
-						finalMetrics[2] = tempLines.get(2);
+					this.increaseMetrics(finalMetrics, tempLines);
 					processed++;
 				}
 			}
@@ -125,10 +120,7 @@ public class LogAnalyzer {
 				if((commDate.isAfter(lowerLim) || commDate.isEqual(lowerLim))
 					&& commDate.isBefore(upperLim)) {
 					tempLines = gitDiff(old, nw, fName);
-					finalMetrics[0] += tempLines.get(0);
-					finalMetrics[1] += tempLines.get(1);
-					if(finalMetrics[2] == 0 || finalMetrics[2] < tempLines.get(2))
-						finalMetrics[2] = tempLines.get(2);
+					this.increaseMetrics(finalMetrics, tempLines);
 					processed++;
 				}
 			}
@@ -200,6 +192,18 @@ public class LogAnalyzer {
 		
 		edits[0] += add;
 		edits[1] += e.getEndA()-e.getBeginA();
+	}
+	
+	
+	private void increaseMetrics(Integer[] finalMetrics, List<Integer> tempLines) {
+		if(tempLines != null) {
+			finalMetrics[0] += tempLines.get(0);
+			finalMetrics[1] += tempLines.get(1);
+		
+			// check if the MAX_LOC_ADDED changed
+			if(finalMetrics[2] == 0 || finalMetrics[2] < tempLines.get(2))
+				finalMetrics[2] = tempLines.get(2);
+		}
 	}
 	
 	

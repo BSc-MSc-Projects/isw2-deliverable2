@@ -1,13 +1,10 @@
 package main.java.utils;
 
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -117,7 +114,7 @@ public class CsvProducer {
 	 * 
 	 * @param release: the version id
 	 * @param relDate: the release date of the version*/
-	private void fillCsvWithMetrics(String release, LocalDate relDate) {
+	private void fillCsvWithMetrics(String release) {
 		String cons =  this.project + constName;
 		var f = new File(cons);
 		
@@ -231,7 +228,7 @@ public class CsvProducer {
 		}
 		
 		setBuggynessWithAv(release);
-		fillCsvWithMetrics(release, endDate);
+		fillCsvWithMetrics(release);
 		resetVersMetrics();
 	}
 	

@@ -2,6 +2,7 @@ package main.java.weka.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import main.java.weka.profile.RunProfile;
@@ -117,7 +118,7 @@ public class Configurer {
 			Double perc = this.findMajorityClassPerc(training);
 			res.setInputFormat(training);
 			
-			List<String> ops =  Arrays.asList(this.osOpts);
+			List<String> ops =  new LinkedList<>(Arrays.asList(this.osOpts));
 			ops.add(perc.toString());
 			String[] osOptions = ops.toArray(new String[0]);
 			
