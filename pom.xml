@@ -101,6 +101,7 @@
   
   <properties>
   	<sonar.projectKey>piercirocaliandro_isw2-deliverable1</sonar.projectKey>
+  	<sonar.projectName>isw2-deliverable2</sonar.projectName>
   	<sonar.organization>piercirocaliandro</sonar.organization>
   	<sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
