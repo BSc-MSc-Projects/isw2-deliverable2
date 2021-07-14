@@ -1,0 +1,22 @@
+\beamer@sectionintoc {1}{Introduzione}{3}{0}{1}
+\beamer@sectionintoc {2}{Derivazione dei dataset}{4}{0}{2}
+\beamer@subsectionintoc {2}{1}{Struttura del dataset}{5}{0}{2}
+\beamer@sectionintoc {3}{Tecnica di classificazione}{6}{0}{3}
+\beamer@sectionintoc {4}{Tecniche utilizzate}{7}{0}{4}
+\beamer@sectionintoc {5}{Metriche analizzate}{8}{0}{5}
+\beamer@subsectionintoc {5}{1}{Analisi dei valori}{9}{0}{5}
+\beamer@sectionintoc {6}{Analisi della AUC per BookKeeper}{10}{0}{6}
+\beamer@subsectionintoc {6}{1}{Analisi della AUC per BookKeeper - miglioramento dei valori}{11}{0}{6}
+\beamer@sectionintoc {7}{Analisi della AUC per ZooKeeper}{12}{0}{7}
+\beamer@subsectionintoc {7}{1}{Analisi della AUC per ZooKeeper - miglioramento dei valori}{13}{0}{7}
+\beamer@sectionintoc {8}{Medie dei valori per AUC}{14}{0}{8}
+\beamer@sectionintoc {9}{Analisi di Precision e Recall per BooKeeper}{15}{0}{9}
+\beamer@subsectionintoc {9}{1}{Tentativo di miglioramento dei valori}{16}{0}{9}
+\beamer@sectionintoc {10}{Analisi di Precision e Recall per ZooKeeper}{17}{0}{10}
+\beamer@subsectionintoc {10}{1}{Tentativo di miglioramento dei valori}{18}{0}{10}
+\beamer@sectionintoc {11}{Risultati analitici per FP - abbassamento dei valori di Precision}{19}{0}{11}
+\beamer@sectionintoc {12}{Analisi di Kappa per BookKeeper}{20}{0}{12}
+\beamer@subsectionintoc {12}{1}{Miglioramento dei valori di Kappa per BookKeeper}{21}{0}{12}
+\beamer@sectionintoc {13}{Analisi di Kappa per ZooKeeper}{22}{0}{13}
+\beamer@subsectionintoc {13}{1}{Miglioramento dei valori}{23}{0}{13}
+\beamer@sectionintoc {14}{Medie dei valori per Kappa}{24}{0}{14}
